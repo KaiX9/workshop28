@@ -67,6 +67,7 @@ public class Review {
         r.setRating(d.getInteger("rating"));
         r.setC_text(d.getString("c_text"));
         r.setGid(d.getInteger("gid"));
+        r.setName(d.getString("game_name"));
 
         return r;
     }

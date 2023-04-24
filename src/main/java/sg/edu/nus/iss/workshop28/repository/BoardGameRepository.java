@@ -1,6 +1,7 @@
 package sg.edu.nus.iss.workshop28.repository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +21,6 @@ import org.springframework.data.mongodb.core.aggregation.MatchOperation;
 import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
 import org.springframework.data.mongodb.core.aggregation.AddFieldsOperation.AddFieldsOperationBuilder;
 import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
 import sg.edu.nus.iss.workshop28.model.Game;
@@ -109,36 +109,41 @@ public class BoardGameRepository {
         Aggregation pipeline = Aggregation.newAggregation(mOp, lOp,
             pOp);
 
-        AggregationResults<Review> r = mongoTemplate.aggregate(pipeline, "reviews",
-        Review.class);
+        AggregationResults<Document> r = mongoTemplate.aggregate(pipeline, "reviews",
+        Document.class);
         
-        List<Review> reviews = r.getMappedResults();
-        for (Review re : reviews) {
-            re.setName(getGameName(re.getC_id()));
+        List<Document> reviews = r.getMappedResults();
+        System.out.println(r.getMappedResults());
+        List<Review> reviewList = new ArrayList<>();
+        for (Document d : reviews) {
+            Review re = Review.createFromDoc(d);
+            reviewList.add(re);
         }
         
-        return reviews;
+        return reviewList;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    public String getGameName(String c_id) {
+    // Method to get fields from different collections if required
+    
+    // public String getGameName(String c_id) {
 
-        Query q1 = new Query();
-        q1.addCriteria(Criteria.where("c_id").is(c_id));
-        q1.fields().include("gid");
-        List<Review> r = mongoTemplate.find(q1, Review.class, "reviews");
-        Integer gid = r.get(0).getGid();
+    //     Query q1 = new Query();
+    //     q1.addCriteria(Criteria.where("c_id").is(c_id));
+    //     q1.fields().include("gid");
+    //     List<Review> r = mongoTemplate.find(q1, Review.class, "reviews");
+    //     Integer gid = r.get(0).getGid();
 
-        Query q2 = new Query();
-        q2.addCriteria(Criteria.where("gid").is(gid));
-        q2.fields().include("name");
-        List<Game> g = mongoTemplate.find(q2, Game.class, "games");
-        String name = g.get(0).getName();
+    //     Query q2 = new Query();
+    //     q2.addCriteria(Criteria.where("gid").is(gid));
+    //     q2.fields().include("name");
+    //     List<Game> g = mongoTemplate.find(q2, Game.class, "games");
+    //     String name = g.get(0).getName();
 
-        return name;
-    }
+    //     return name;
+    // }
 
 }
